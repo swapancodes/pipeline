@@ -12,9 +12,5 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from pymilvus import MilvusClient
 from pathlib import Path
 
-# 1. Load your data
-loader = DirectoryLoader("data/docs", glob="**/*.pdf", loader_cls=PyMuPDFLoader, show_progress=True)
-docs = loader.load()
-print("success")
 
 
