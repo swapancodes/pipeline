@@ -7,7 +7,7 @@ st.set_page_config(
 st.title("📚 PDF RAG Chatbot")
 
 from pymilvus import MilvusClient
-# Cache the connection pool for performance optimization
+# #Cache the connection pool for performance optimization
 @st.cache_resource
 def get_milvus_client():
     return MilvusClient(
