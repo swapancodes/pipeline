@@ -6,31 +6,14 @@ st.set_page_config(
 )
 st.title("📚 PDF RAG Chatbot")
 
+from langchain_community.document_loaders import DirectoryLoader,PyMuPDFLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_huggingface import HuggingFaceEmbeddings
 from pymilvus import MilvusClient
-# Cache the connection pool for performance optimization
-@st.cache_resource
-def get_milvus_client():
-    return MilvusClient(
-        uri=st.secrets["MILVUS_URI"],
-        token=st.secrets["MILVUS_TOKEN"]
-    )
-# Connect to the instance
-client = get_milvus_client()
 
-st.title("Milvus Vector Database Connection")
+# 1. Load your data
+loader = DirectoryLoader("data/docs", glob="**/*.pdf", loader_cls=PyMuPDFLoader, show_progress=True)
+docs = loader.load()
+print("success")
 
-#---------Create a Collection----------
-if client.has_collection(collection_name="rag_collection"):
-    client.drop_collection(collection_name="rag_collection")
-client.create_collection(
-    collection_name="rag_collection",
-    dimension=384,  # The vectors we will use in this demo has 384 dimensions
-)
-# Verify connection by listing available collections
-try:
-    collections = client.list_collections()
-    st.success("Successfully connected to Milvus!")
-    st.write("Available Collections:", collections)
-except Exception as e:
-    st.error(f"Failed to connect to Milvus")
 
