@@ -6,4 +6,24 @@ st.set_page_config(
 )
 st.title("📚 PDF RAG Chatbot")
 
-#st.write("Hello, Streamlit Cloud!")
+
+from pymilvus import MilvusClient
+# Cache the connection pool for performance optimization
+@st.cache_resource
+def get_milvus_client():
+    return MilvusClient(
+        uri=st.secrets["MILVUS_URI"],
+        token=st.secrets["MILVUS_TOKEN"]
+    )
+# Connect to the instance
+client = get_milvus_client()
+
+st.title("Milvus Vector Database Connection")
+
+# Verify connection by listing available collections
+try:
+    collections = client.list_collections()
+    st.success("Successfully connected to Milvus!")
+    st.write("Available Collections:", collections)
+except Exception as e:
+    st.error(f"Failed to connect to Milvus: {e}")
