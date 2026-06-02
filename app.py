@@ -10,6 +10,7 @@ from langchain_community.document_loaders import DirectoryLoader,PyMuPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from pymilvus import MilvusClient
+from pathlib import Path
 
 # 1. Load your data
 loader = DirectoryLoader("data/docs", glob="**/*.pdf", loader_cls=PyMuPDFLoader, show_progress=True)
