@@ -20,12 +20,8 @@ client = get_milvus_client()
 st.title("Milvus Vector Database Connection")
 
 #---------Create a Collection----------
-if client.has_collection(collection_name="demo1_collection"):
-    client.drop_collection(collection_name="demo1_collection")
-client.create_collection(
-    collection_name="demo1_collection",
-    dimension=384,  # The vectors we will use in this demo has 384 dimensions
-)
+client.drop_collection(collection_name="demo1_collection")
+
 # Verify connection by listing available collections
 try:
     collections = client.list_collections()
