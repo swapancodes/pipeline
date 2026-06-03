@@ -1,53 +1,80 @@
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
 from pymilvus import MilvusClient
 import streamlit as st
 
-api_key = st.secrets("GROQ_API_KEY")
+# ---------------------------
+# API Keys
+# ---------------------------
+api_key = st.secrets["GROQ_API_KEY"]
+
 if not api_key:
     raise ValueError("GROQ_API_KEY not found")
 
-embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
-#embeddings = HuggingFaceEmbeddings(model_name="BAAI/bge-large-en-v1.5")
+# ---------------------------
+# Embedding Model
+# ---------------------------
+embeddings = HuggingFaceEmbeddings(
+    model_name="sentence-transformers/all-MiniLM-L6-v2"
+)
 
-#-----------Milvus Connection-----------
+# ---------------------------
+# Milvus Connection
+# ---------------------------
 @st.cache_resource
 def get_milvus_client():
     return MilvusClient(
         uri=st.secrets["MILVUS_URI"],
         token=st.secrets["MILVUS_TOKEN"]
     )
-client=get_milvus_client()
 
+client = get_milvus_client()
+
+# ---------------------------
+# Groq LLM
+# ---------------------------
 llm = ChatGroq(
+    api_key=api_key,
     model="llama-3.1-8b-instant",
     temperature=0,
-    max_tokens=None,
-    timeout=None,
-    max_retries=2,
+    max_retries=2
 )
-# Prompt
-prompt = ChatPromptTemplate.from_messages([
-    (
-        "system",
-        """You are an assistant for question-answering tasks.
-Use the following retrieved context to answer the question.
-If the answer is not in the context, say "I don't know".
+
+# ---------------------------
+# Prompt Template
+# ---------------------------
+prompt = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            """You are an assistant for question-answering tasks.
+
+Use the retrieved context below to answer the question.
+
+If the answer is not present in the context, reply:
+"I don't know."
 
 Context:
 {context}
 """
-    ),
-    ("human", "{question}")
-])
+        ),
+        ("human", "{question}")
+    ]
+)
 
-# Create chain
-chain = prompt | llm
+# ---------------------------
+# Chain
+# ---------------------------
+chain = prompt | llm | StrOutputParser()
 
-
+# ---------------------------
+# QA Function
+# ---------------------------
 def ask_question(question: str):
-    # Generate embedding
+
+    # Create query embedding
     query_vector = embeddings.embed_query(question)
 
     # Search Milvus
@@ -55,22 +82,26 @@ def ask_question(question: str):
         collection_name="demo_collection",
         data=[query_vector],
         limit=5,
-        search_params={"metric_type": "COSINE"},
         output_fields=["text"]
     )
 
-    # Extract text
+    # Extract retrieved text
     retrieved_docs = []
 
     for hit in results[0]:
-        text = hit["entity"]["text"]
-        retrieved_docs.append(text)
+        if "entity" in hit:
+            retrieved_docs.append(hit["entity"]["text"])
+        else:
+            retrieved_docs.append(hit["text"])
 
     context = "\n\n".join(retrieved_docs)
 
-    # Invoke LLM
-    response = chain.invoke({
-        "context": context,
-        "question": question
-    })
-    return response.content
+    # Generate answer
+    response = chain.invoke(
+        {
+            "context": context,
+            "question": question
+        }
+    )
+
+    return response
