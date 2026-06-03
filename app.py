@@ -11,8 +11,8 @@ from pymilvus import MilvusClient
 @st.cache_resource
 def get_milvus_client():
     return MilvusClient(
-        uri=st.secrets.get["MILVUS_URI"],
-        token=st.secrets.get["MILVUS_TOKEN"]
+        uri=st.secrets["MILVUS_URI"],
+        token=st.secrets["MILVUS_TOKEN"]
     )
 # Connect to the instance
 client = get_milvus_client()
