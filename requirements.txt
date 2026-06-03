@@ -1,3 +1,4 @@
+langchain
 langchain-core
 langchain-community
 pymupdf
@@ -7,6 +8,10 @@ langchain-huggingface
 sentence-transformers
 pymilvus
 langchain-milvus
+langchain-groq
+python-dotenv
 streamlit
+fastapi
+
 
 
