@@ -10,7 +10,7 @@ from langchain_community.document_loaders import (DirectoryLoader, PyMuPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from pymilvus import MilvusClient
-COLLECTION_NAME = "demo_collection"
+COLLECTION_NAME = "new_collection"
 
 #-----------Milvus Connection-----------
 @st.cache_resource
